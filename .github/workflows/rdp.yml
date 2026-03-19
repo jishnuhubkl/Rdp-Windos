@@ -1,0 +1,39 @@
+name: Windows-RDP-Tailscale
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rdp:
+    runs-on: windows-latest
+    timeout-minutes: 360
+
+    steps:
+
+    - name: Create User
+      run: |
+        net user root "root" /add
+        net localgroup administrators root /add
+
+    - name: Enable Remote Desktop
+      run: |
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+    - name: Install Tailscale
+      run: |
+        choco install tailscale -y
+
+    - name: Start Tailscale
+      run: |
+        & "C:\Program Files\Tailscale\tailscale.exe" up --authkey $env:TAILSCALE_KEY
+      env:
+        TAILSCALE_KEY: ${{ secrets.TAILSCALE_KEY }}
+
+    - name: Show Tailscale IP
+      run: |
+        & "C:\Program Files\Tailscale\tailscale.exe" ip -4
+
+    - name: Keep Runner Alive
+      run: |
+        Start-Sleep -Seconds 21600
