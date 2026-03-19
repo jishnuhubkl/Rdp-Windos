@@ -12,7 +12,7 @@ jobs:
 
     - name: Create User
       run: |
-        net user root "root" /add
+        net user root "Neil@067" /add
         net localgroup administrators root /add
 
     - name: Enable Remote Desktop
